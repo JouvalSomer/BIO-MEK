@@ -1,0 +1,206 @@
+\documentclass[a4paper, oneside, norsk, 10pt]{article} % Alternativt nynorsk
+%% Tegnkoding
+\usepackage[utf8]{inputenx} % Kildekode
+\usepackage[T1]{fontenc}    % PDF
+\usepackage{graphicx}
+
+%% Fonter og typografi
+\usepackage{lmodern}           % Latin Modern Roman
+\usepackage[scaled]{beramono}  % Bera Mono (Bitstream Vera Sans Mono)
+\renewcommand{\sfdefault}{phv} % Helvetica
+\usepackage[final]{microtype}  % Forbedret typografi
+%\pretitle{\begin{center}\LARGE\sffamily\bfseries\boldmath}           % Tittel
+%\renewcommand{\abstractnamefont}{\sffamily\bfseries}                 % Sammendrag
+%\renewcommand*{\chaptitlefont}{\Large\bfseries\sffamily\raggedright} % Kapittel
+%\setsecheadstyle{\large\bfseries\sffamily\raggedright}               % Seksjon
+%\setsubsecheadstyle{\large\bfseries\sffamily\raggedright}            % Underseksjon
+%\setsubsubsecheadstyle{\normalsize\bfseries\sffamily\raggedright}    % Underunderseksjon
+%\setparaheadstyle{\normalsize\bfseries\sffamily\raggedright}         % Avsnitt
+%\setsubparaheadstyle{\normalsize\bfseries\sffamily\raggedright}      % Underavsnitt
+%
+
+
+
+%% Matematikk
+\usepackage{amssymb}   % Ekstra symboler
+\usepackage{amsthm}    % Teoremaktige omgivelser
+\usepackage{thmtools}  % Teoremaktige omgivelser
+\usepackage{mathtools} % Fonter og omgivelser for matematikk
+\usepackage{mathrsfs}  % Scriptfont med \mathscr{}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{caption}
+
+
+%% Diverse
+\usepackage{graphicx}  % Bilder
+\usepackage{babel}     % Automatiske oversettelser
+\usepackage{csquotes}  % Sitater
+\usepackage{textcomp}  % Ekstra symboler
+\usepackage{listings}  % Typesetting av kode
+\usepackage{bbm}
+\lstset{basicstyle = \ttfamily, frame = tb}
+\usepackage{subfig}
+\usepackage[bottom]{footmisc}
+
+\usepackage[
+pdftitle={Mongolia games paper}, 
+pdfauthor={Daniel Rubenson, Peter Loewen \& Richard Sawyer}, 
+colorlinks=true, 
+urlcolor=black, 
+linkcolor=black, 
+citecolor=black, 
+filecolor=black, 
+raiselinks=false, 
+hyperfootnotes=true]{hyperref}
+
+% Bibliografi
+\usepackage{mathscinet}
+\usepackage[backend    = bibtex,
+sortcites  = true,
+giveninits = true,
+doi        = false,
+isbn       = false,
+url        = false,
+style      = authoryear]{biblatex}
+\DeclareNameAlias{sortname}{family-given}
+\DeclareNameAlias{default}{family-given}
+\DeclareFieldFormat[article]{volume}{\bibstring{jourvol}\addnbspace#1}
+\DeclareFieldFormat[article]{number}{\bibstring{number}\addnbspace#1}
+\renewbibmacro*{volume+number+eid}
+{
+	\printfield{volume}
+	\setunit{\addcomma\space}
+	\printfield{number}
+	\setunit{\addcomma\space}
+	\printfield{eid}
+}
+\addbibresource{ref.bib}
+
+
+%% Kryssreferanser
+%\usepackage{varioref}
+%\usepackage[pdfusetitle]{hyperref}
+%\urlstyle{sf}
+%\usepackage[nameinlink, noabbrev]{cleveref}
+%\crefname{chapter}{seksjon}{seksjoner}
+%\Crefname{chapter}{Seksjon}{Seksjoner}
+
+
+%% Kompensasjon for lange ord i norsk
+\pretolerance = 20000
+\tolerance    = 60000
+\hbadness     = 60000
+
+
+%% Teoremaktige omgivelser
+\declaretheorem[style = plain, numberwithin = section]{teorem}
+\declaretheorem[style = plain,      sibling = teorem]{korollar}
+\declaretheorem[style = plain,      sibling = teorem]{lemma}
+\declaretheorem[style = plain,      sibling = teorem]{proposisjon}
+\declaretheorem[style = definition, sibling = teorem]{definisjon}
+\declaretheorem[style = definition, sibling = teorem]{eksempel}
+\declaretheorem[style = remark,    numbered = no]{bemerkning}
+
+%%%%%% Derivatives. Optional argument to specify order of derivative
+\newcommand{\deriv}[3][]{\dfrac{\text{d}^{#1}#2}{\text{d}#3^{#1}}} 
+\newcommand{\Deriv}[3][]{\dfrac{\text{D}^{#1}#2}{\text{D}#3^{#1}}}
+\newcommand{\pderiv}[3][]{\dfrac{\partial^{#1}#2}{\partial#3^{#1}}} 
+
+%% Avgrensningstegn
+\DeclarePairedDelimiter{\p}{\lparen}{\rparen}   % Parentes
+\DeclarePairedDelimiter{\set}{\lbrace}{\rbrace} % Mengde
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}   % Absoluttverdi
+\DeclarePairedDelimiter{\norm}{\lVert}{\rVert}  % Norm
+
+\newcommand{\iprod}[2]{\left\langle #1, #2 \right\rangle}
+\newcommand{\emiprod}{\iprod{\cdot}{\cdot}}
+
+%% Operatorer
+\newcommand{\diff}{\mathop{}\!\mathrm{d}}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\E}{E}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+
+
+%% Nye kommandoer for mengder
+\newcommand{\N}{\mathbb{N}}   % Naturlige tall
+\newcommand{\Z}{\mathbb{Z}}   % Heltall
+\newcommand{\Q}{\mathbb{Q}}   % Rasjonale tall
+\newcommand{\R}{\mathbb{R}}   % Reelle tall
+\newcommand{\C}{\mathbb{C}}   % Komplekse tall
+\newcommand{\A}{\mathcal{A}}  % Sigmaalgebra
+\renewcommand{\P}{\mathbb{P}} % Projektivt rom
+
+
+%% Nye kommandoer for vektorer
+%\renewcommand{\a}{\mathbf{a}}
+%\renewcommand{\b}{\mathbf{b}}
+%\renewcommand{\c}{\mathbf{c}}
+%\renewcommand{\v}{\mathbf{v}}
+%\newcommand{\w}{\mathbf{w}}
+%\newcommand{\0}{\mathbf{0}}
+%\newcommand{\1}{\mathbf{1}}
+
+%%%%%%%%%%%%%%  VECTORS TO BOLD
+\let\oldhat\hat
+\renewcommand{\vec}[1]{\mathbf{#1}}
+%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%% UNIT VECTOR 
+\newcommand{\uveci}{{\bm{\hat{\textnormal{\bfseries\i}}}}}
+\newcommand{\uvecj}{{\bm{\hat{\textnormal{\bfseries\j}}}}}
+\DeclareRobustCommand{\uvec}[1]{{%
+		\ifcsname uvec#1\endcsname
+		\csname uvec#1\endcsname
+		\else
+		\bm{\hat{\mathbf{#1}}}%
+		\fi
+}}
+%%%%%%%%%%%%%
+
+\newcommand{\1}{\mathbbm{1}}
+\newcommand{\ix}{\uvec{i}_x}
+\newcommand{\iy}{\uvec{i}_y}
+\newcommand{\iz}{\uvec{i}_z}
+
+
+%Radreduksjonsmatrise
+\newenvironment{sysmatrix}[1]
+{\left(\begin{array}{@{}#1@{}}}
+	{\end{array}\right)}
+\newcommand{\ro}[1]{%
+	\xrightarrow{\mathmakebox[\rowidth]{#1}}%
+}
+\renewcommand{\qedsymbol}{$\blacksquare$}
+
+%Bevismiljø norsk
+\newenvironment{bevis}[1][\proofname]{%
+	\proof[ \scshape \large Bevis \newline]%
+}{\endproof}
+
+
+
+
+%% Diverse
+\renewcommand{\qedsymbol}{\(\blacksquare\)}
+
+
+\begin{document}
+	\begin{titlepage}
+		\centering
+		{\scshape\LARGE Overskrift \par}
+		\vspace{1cm}
+		{\huge\bfseries under	 \par}
+		\vspace{2cm}
+		{\Large\itshape forfatter} 
+		
+		\vfill
+		
+		% Bottom of the page
+		{\large \today\par}
+	\end{titlepage}
+
+\end{document}
