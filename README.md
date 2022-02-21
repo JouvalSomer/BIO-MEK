@@ -4,3 +4,8 @@
 ### Prosjekt 1
 ### Diffusjon
 Overleaf link: https://www.overleaf.com/project/61fcee851dd0ca0567e44de1 
+
+
+### Prosjekt 2
+### 
+Overleaf link: https://www.overleaf.com/8824444568srwfyyybvyhm
