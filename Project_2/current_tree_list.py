@@ -1,6 +1,3 @@
-import matplotlib.pyplot as plt
-import numpy as np
-
 def branch2(S_P, D, angle):
     """
     """
@@ -34,8 +31,8 @@ def branch2(S_P, D, angle):
 
     if L > L0:
         # Runs the function until we hit smallest wanted length
-        branch2(N_P, D_n, angle) # Next point up
-        branch2(N_P, D_n, -angle) # Next point down
+        branch2(N_P, D_n, -angle) # Next point up
+        branch2(N_P, D_n, angle) # Next point down
     
         return points
 
@@ -49,9 +46,25 @@ if __name__=="__main__":
     D = 2
     points = branch2(S_P, D, angle)
 
-    for i, point in enumerate(points):
-        if i == 0:
-            plt.plot(point[0], point[1], 'r.')
-        else:
-            plt.plot(point[0], point[1], 'b.')
+    """
+    The next block sorts the points first according to x-values,
+    then according to y-values 
+    """
+    points.sort(key=lambda x:x[0]) # Sorts points in ascending order according to x-values 
+
+    points_sorted = points[:2]
+    N = int(np.log2(len(points)//2+1))
+    first = 0
+    last = 2
+    for n in range(N):
+        points_n = points[2 + first:2 + last]
+        points_n.sort(key=lambda x:x[1])
+        for point in points_n:
+            points_sorted.append(point)
+        first = last
+        last = last*2 + 2
+
+    # Plots points
+    for point in points_sorted:
+        plt.plot(point[0], point[1], 'b.')
     plt.show()
