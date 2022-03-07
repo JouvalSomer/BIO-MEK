@@ -11,19 +11,19 @@ import numpy as np
 
 
 def pressure(G,pa,pv):
-    n = np.size(G)
+    n = int(np.sqrt(np.size(G)))
     A = np.zeros((n+1,n+1))
     A[0,0] = 1
-    A[n+1, n+1] = 1
+    A[n, n] = 1
     for i in range(1,n):
-        for j in range(0,n+1):
+        for j in range(0,n):
             if G[i,j] != 0:
                 A[i,j] = -1/G[i,j]
                 A[i,i] = A[i,i] + 1/G[i,j]
                 
     b = np.zeros(n+1)
     b[0] = pa
-    b[n+1] = pv
+    b[n] = pv
     p = np.linalg.solve(A,b)
     return p
 
