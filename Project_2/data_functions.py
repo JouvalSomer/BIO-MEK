@@ -8,9 +8,11 @@ Created on Mon Mar  7 10:23:59 2022
 import numpy as np
 
 
+
+
 def pressure(G,pa,pv):
     n = np.size(G)
-    A = np.zeros(n+1,n+1)
+    A = np.zeros((n+1,n+1))
     A[0,0] = 1
     A[n+1, n+1] = 1
     for i in range(1,n):
