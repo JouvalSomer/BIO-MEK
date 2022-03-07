@@ -32,8 +32,8 @@ def pressure(G,pa,pv):
 def flow_rates(G,p,R):
     n = np.size(p)
     Q = np.zeros(n+1)
-    for i in range(0,n+1):
-        for j in range(0,n+1):
+    for i in range(0,n):
+        for j in range(0,n):
             if G[i,j] != 0:
                 Q[i,j] = np.abs(p[i]- p[j])/(R[i,j]*G[i,j])       
     return Q
@@ -44,8 +44,8 @@ def flow_rates(G,p,R):
 def average_speeds(G,Q,r):
     n = np.size(G)
     v = np.zeros(n+1)
-    for i in range(0,n+1):
-        for j in range(0,n+1):
+    for i in range(0,n):
+        for j in range(0,n):
             if G[i,j] != 0:
                 v[i,j] = Q[i,j]/(np.pi*r[i,j]**2)
     return v
