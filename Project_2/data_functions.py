@@ -12,12 +12,14 @@ def pressure(G,pa,pv):
     n = int(np.sqrt(np.size(G)))
     A = np.zeros((n,n))
     
-    for i in range(1,n-1):
+    for i in range(1,int(n/2)):
         for j in range(0,n):
             if G[i,j] != 0:
                 A[i,j] = -1/G[i,j]
                 A[i,i] += 1/G[i,j]
                 
+    for i in range(int(n/2), n):
+        A[i,i] = 1
     A[0,0] = 1
     A[n-1, n-1] = 1
     b = np.zeros(n)
