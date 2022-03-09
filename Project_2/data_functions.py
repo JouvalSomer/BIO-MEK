@@ -30,7 +30,8 @@ def pressure(G,pa,pv):
     A = np.bmat([[A1, A3], [A4, A2]])
     b = np.zeros(2*n)
     b[0] = pa
-    b[int(n/2):] = pv
+    b[int(n/2):n] = pv
+    b[int(n*3/2):] = pv
     p = np.linalg.solve(A,b)
     return p,A,b
 
