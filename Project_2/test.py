@@ -11,7 +11,7 @@ from radius_angle_length import *
 
 import numpy as np
 
-n = 7 #number of points
+n = 2**3#number of points
 
 mu = 10**(-3)
 
@@ -20,28 +20,37 @@ r= 1
 radius = new_radius(r)
 
 
-length_int =  0.3#0.5*10**(-3)
+length_int =  0.6#0.5*10**(-3)
 
-G = np.zeros((n+1,n+1))
+G1 = G2 = np.zeros((n,n))
+
+G3 = G4 = np.zeros((n,n))
 
 
 for i in range(2,n):
     for j in range(2,n):
         if j % 2 == 0:
             #if i % 2 == 0:
-                G[int(j/2),j] = 0.3
-                G[int(j/2),j+1] = 0.4
+                G1[int(j/2),j] = 0.3
+                G1[int(j/2),j+1] = 0.4
                 
         if j % 2 == 0:
             #if i % 2 == 0:
-                G[j,int(j/2)] = 0.3
-                G[j+1,int(j/2)] = 0.4
+                G1[j,int(j/2)] = 0.3
+                G1[j+1,int(j/2)] = 0.4
         
-G[0,0] = 0
-G[n,n] = 0
-G[0,1] = G[1,0] = length_int
+for i in range(0,n):
+    G3[i,i] = 2
+        
 
+        
+G = np.bmat([[G1, G3], [G4, G2]])
+G2[0,0]
+G1[0,0] = 0
+G1[n-1,n-1] = 0
+G1[0,1] = G1[1,0] = length_int
 
+G = np.bmat([[G1, G3], [G4, G2]])
 
 p,A,b = pressure(G,1,0.1)
 
