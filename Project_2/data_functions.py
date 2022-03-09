@@ -31,7 +31,7 @@ def pressure(G,pa,pv):
     b = np.zeros(2*n)
     b[0] = pa
     b[int(n/2):n] = pv
-    b[int(n*3/2):] = pv
+    #b[int(n*3/2):] = pv
     p = np.linalg.solve(A,b)
     return p,A,b
 
