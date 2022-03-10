@@ -34,7 +34,7 @@ for i in range(2,n):
                 G1[int(j/2),j] = 0.3
                 G1[int(j/2),j+1] = 0.4
                 
-        if j % 2 == 0:
+        if j % 2 == 0: 
             #if i % 2 == 0:
                 G1[j,int(j/2)] = 0.3
                 G1[j+1,int(j/2)] = 0.4
