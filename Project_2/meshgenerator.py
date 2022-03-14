@@ -12,6 +12,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.sparse import csr_matrix, hstack, vstack, bmat
 from scipy.sparse.linalg import spsolve
+from mpl_toolkits.mplot3d import axes3d
 # from scipy import linal
 
 #%% setting constants
@@ -24,7 +25,7 @@ viscosity = 10**-3
 shrinkfactor = (2**(2/3)) / 2  #how much the diameter shrinks each split
 
 D = 3 /shrinkfactor #means that the first radius is 3, it gets multiplied by shrinkfactor later
-levels = 10 #the amount of times the cells split
+levels = 20 #the amount of times the cells split
 
 # startflux = 1 #the flux into the first point(not used in current version)
 
@@ -34,7 +35,7 @@ startpressure = 100  #pressure in the first point, cannot be zero as we need a s
 
 #%%
 save = "False" #saves the mesh to a file
-plot = "False"  #plots the points
+plot = "True"  #plots the points
 
 
 
@@ -128,14 +129,7 @@ if save == "True":
 
 
 
-if plot == "True":
 
-    listofpointsarray = np.array(listofpoints)
-    listofcellsarray = np.array(listofcells)
-    x, y = listofpointsarray.T
-    
-
-    plt.scatter(x,y)
 
 
 
@@ -256,4 +250,20 @@ for g in range(0, 10): #the iteration to find pressure at boundary. Pressure is 
 
 
 
+if plot == "True":
 
+    listofpointsarray = np.array(listofpoints)
+    listofcellsarray = np.array(listofcells)
+    x, y = listofpointsarray.T
+    
+
+    plt.scatter(x,y, c=pressure[:int(np.size(pressure)/2)], s=5, cmap='jet')
+    plt.plot(x,y)#, c=pressure[:int(np.size(pressure)/2)], cmap='jet')
+    
+    plt.show()
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+
+    ax.scatter(x, y, pressure[:int(np.size(pressure)/2)], marker='o' )
+    plt.show()
