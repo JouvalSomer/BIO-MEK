@@ -3,7 +3,7 @@
 """
 Created on Mon Feb 21 21:11:38 2022
 
-lag et mesh av blodårer
+Lag et mesh av blodårer
 
 @author: lemmet
 """
