@@ -3,7 +3,7 @@
 """
 Created on Mon Feb 21 21:11:38 2022
 
-Lag et mesh av blodårer
+lag et mesh av blodårer
 
 @author: lemmet
 """
@@ -278,11 +278,15 @@ for i in range(1, levels):
 
 
 x = np.linspace(0, levels, levels)
-plt.plot( x, avg_pressure_blood, "-r", label="Blood")
+plt.plot( x, avg_pressure_blood, "-r", label="Avarage Blood-Pressure")
 plt.legend()
+plt.xlabel("Amount of splits")
+plt.ylabel("Average Pressure [Pa]")
 plt.show()
 
-plt.plot(x, avg_pressure_CSF,  "-b", label="CSF")
+plt.plot(x, avg_pressure_CSF,  "-b", label="Average CSF-Pressure")
+plt.xlabel("Amount of splits")
+plt.ylabel("Average Pressure [Pa]")
 plt.legend()
 plt.show()
 
