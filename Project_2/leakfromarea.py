@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Created on Thu Mar 17 13:12:37 2022
+
+@author: lemmet
+"""
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
 Created on Mon Feb 21 21:11:38 2022
 
 lag et mesh av blodårer
@@ -16,14 +24,14 @@ from scipy.sparse.linalg import spsolve
 
 #%% setting constants
 "INPUTS"
-leak_resistance = 1/500  #1/Resisistance, so higher number means more leaking
+leak_resistance = 10**-9  #1/Resisistance, so higher number means more leaking
 viscosity = 10**-3   
 factoroutflow = 2*133*60*10**6    #Needed on the boundary as P_out = factoroutflow*Q + P_end
 lengthfactor = 100 #"cell length = diameter*lengthfactor"
 shrinkfactor = (2**(2/3)) / 2  #how much the diameter shrinks each split
 
 D = 0.03 /shrinkfactor #means that the first radius is 3, it gets multiplied by shrinkfactor later
-levels = 15#))the amount of times the cells split
+levels = 20#10*-15 the amount of times the cells split
 
 startpressure = 40*133  #pressure in the first point in blood
 endpressure = 30*133   #The pressure at the end, not including the boundary condition from flux. 1 Pa = 133 mmHg
@@ -31,7 +39,7 @@ csfpressure = 5*133  # the pressure at csf boundaries, not including flux bounda
 
 #%%
 save = "False" #saves the mesh to a file
-plot = "Frue"  #plots the points
+plot = "False"  #plots the points
 "END IMPUTS"
 
 
@@ -149,7 +157,7 @@ B = np.zeros(Np*2)  #The B in Ax = B, is for both blood and CSF so has to be twi
 A_topright = lil_matrix((Np, Np))
 
 A_downleft = lil_matrix((Np, Np))
-c = [] #this is all the coefficients needed, on the form pi*r**4/(8*l*viscosity) so Q=c*(P[0]-P[1])
+c = [] #this is all the coefficients needed, on the form r**4/(8*l*viscosity)
 
 for i in range(0, Np-1):
     c_value = np.pi*((listofcells[i][3])/2)**4/(8*listofcells[i][4]*viscosity)
@@ -167,7 +175,7 @@ for i in range(1, int((Np-1)/2)): #all points exept firstpoint and last level
         A[i, lastpoint] = c[i-1]  #dependence on last point
         A[i, nextpoint1] = c[nextpoint1-1] #dependence on first splitpoint
         A[i, nextpoint2] = c[nextpoint2-1] #dependence on  second splitpoint
-        A[i, i] = -c[nextpoint1 -1] - c[nextpoint2-1] - c[i-1] - c[i-1]*leak_resistance #dependence on it self, including the leak to csf
+        A[i, i] = -c[int(i*2)+1] - c[int(i*2)] - c[i-1] - np.pi*listofcells[i-1][3]*listofcells[i-1][4]*leak_resistance #dependence on it self, including the leak to csf
     else:
         
         
@@ -179,12 +187,12 @@ for i in range(1, int((Np-1)/2)): #all points exept firstpoint and last level
         A[i, lastpoint] = c[i-1]
         A[i, nextpoint1] = c[nextpoint1-1]
         A[i, nextpoint2] = c[nextpoint2-1]
-        A[i, i] = -c[nextpoint1 -1] - c[nextpoint2-1]  - c[i-1] - c[i-1]*leak_resistance
+        A[i, i] = -c[int(i*2)] - c[int(i*2)+1] - c[i-1] - np.pi*listofcells[i-1][3]*listofcells[i-1][4]*leak_resistance
         if i % 10000 == 0:
             print(f"creating A_blood, row {i} of {Np} points")
 for i in range(int((Np-1)/2), Np): #the coefficiants on the boundary eqs
     
-    A[i, i] = 1 + factoroutflow*c[i-1] + leak_resistance*c[i-1]
+    A[i, i] = 1 + factoroutflow*c[i-1] + leak_resistance*np.pi*listofcells[i-1][3]*listofcells[i-1][4]
     if i % 2 == 0: #different for odd and even numbers, as the splitting affects the numbering
         lastpoint = int(i/2-1)   
         A[i, lastpoint] = -factoroutflow*c[i-1]
@@ -219,18 +227,18 @@ for i in range(1, int((Np-1)/2)):
     # A_topright[i, i] = k*np.pi*D*L/(viscosity*L_radial) #darcy's law, this is more accurate, but we lack information on thickness of cellwall and k (permability)
     
     
-    A_topright[i, i] =  c[i-1]*leak_resistance  #says that the leak resistance is the c of last cell, times some factor
+    A_topright[i, i] = np.pi*listofcells[i-1][3]*listofcells[i-1][4]*leak_resistance  #says that the leak resistance is the c of last cell, times some factor
     
-    A_downleft[i, i] =  c[i-1]*leak_resistance
+    A_downleft[i, i] =  np.pi*listofcells[i-1][3]*listofcells[i-1][4]*leak_resistance
 "for boundary in blood and csf"
 for i in range(int((Np-1)/2), Np):
     
     # A_topright[i, i] = k*np.pi*D*L/(viscosity*L_radial) #darcy's law, this is more accurate, but we lack information on thickness of cellwall and k (permability)
     
     
-    A_topright[i, i] =  -c[i-1]*leak_resistance  #says that the leak resistance is the c of last cell, times some factor
+    A_topright[i, i] = -np.pi*listofcells[i-1][3]*listofcells[i-1][4]*leak_resistance  #says that the leak resistance is the c of last cell, times some factor
     
-    A_downleft[i, i] =  -c[i-1]*leak_resistance
+    A_downleft[i, i] =  -np.pi*listofcells[i-1][3]*listofcells[i-1][4]*leak_resistance
 
 
 
@@ -294,28 +302,5 @@ plt.xlabel("Amount of splits")
 plt.ylabel("Average Pressure [Pa]")
 plt.legend()
 plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
