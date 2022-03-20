@@ -25,19 +25,19 @@ for s in range (1, outflow_iterations+1):
     leakfromarea = "True" #choose whether to calculate leak from area of cell or from the resistance of the cell
     
     if leakfromarea == "True":
-        leak_per_area_factor = 10**-9
+        leak_per_area_factor = 10**-8
         
     else:
-        leak_resistance = 1/100  #1/Resisistance, so higher number means more leaking
+        leak_resistance = 1/300  #1/Resisistance, so higher number means more leaking
     
     
     viscosity = 10**-3   
-    factoroutflow = (10**s)*2*133*60*10**3    #Needed on the boundary as P_out = factoroutflow*Q + P_end
+    factoroutflow = (10**s)*2*133*60 *10**1  #Needed on the boundary as P_out = factoroutflow*Q + P_end
     lengthfactor = 100 #"cell length = diameter*lengthfactor"
-    shrinkfactor = (2**(2/3)) / 2  #how much the diameter shrinks each split
+    shrinkfactor = (1/2)**(1/3.67)   #how much the diameter shrinks each split
     
     D = 0.03 /shrinkfactor #means that the first radius is 3, it gets multiplied by shrinkfactor later
-    levels = 15#))the amount of times the cells split
+    levels = 21#))the amount of times the cells split
     
     startpressure = 40*133  #pressure in the first point in blood
     endpressure = 30*133   #The pressure at the end, not including the boundary condition from flux. 1 Pa = 133 mmHg
@@ -320,20 +320,20 @@ for s in range (1, outflow_iterations+1):
     x = np.linspace(0, levels, levels)
     plt.plot( x, avg_pressure_blood,  label=f"C ={format(factoroutflow, '10.1E')}")
     legend = plt.legend(loc="lower left", prop={"size": 7})
-    plt.xlabel("Amount of splits")
     plt.ylabel("Average Pressure [Pa]")
     plt.title("Blood")
     
     plt.subplot(2, 1, 2)
     plt.plot(x, avg_pressure_CSF,   label=f"C ={format(factoroutflow, '10.1E')}")
     plt.title("CSF")
-    plt.xlabel("Amount of splits")
     plt.ylabel("Average Pressure [Pa]")
+    plt.xlabel("Bifurcations")
+
     legend = plt.legend(loc="lower left", prop={"size": 7})
     if leakfromarea == "True":
         plt.suptitle(f"Leak from area,  Leakfactor = {leak_per_area_factor}")
     else:
-        plt.suptitle(f"Leak from restistance, factor = {1/leak_resistance}")
+        plt.suptitle(f"Leak from resistance, factor = {1/leak_resistance}")
     print()
     print()
     print("INPUTS:")
@@ -347,7 +347,7 @@ for s in range (1, outflow_iterations+1):
         
         
     
-
+plt.tight_layout()
 
 
 plt.savefig("Different_c", dpi=1000)
