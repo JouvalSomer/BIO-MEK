@@ -19,20 +19,20 @@ from scipy.sparse.linalg import spsolve
 
 "INPUTS"
 
-outflow_iterations = 4
+outflow_iterations = 3
 
 for s in range (1, outflow_iterations+1):
     leakfromarea = "True" #choose whether to calculate leak from area of cell or from the resistance of the cell
     
     if leakfromarea == "True":
-        leak_per_area_factor = 10**-8
+        leak_per_area_factor = 10**-13
         
     else:
         leak_resistance = 1/300  #1/Resisistance, so higher number means more leaking
     
     
     viscosity = 10**-3   
-    factoroutflow = (10**s)*2*133*60 *10**1  #Needed on the boundary as P_out = factoroutflow*Q + P_end
+    factoroutflow = (10**s)*2*133*60 *10**1 #Needed on the boundary as P_out = factoroutflow*Q + P_end
     lengthfactor = 100 #"cell length = diameter*lengthfactor"
     shrinkfactor = (1/2)**(1/3.67)   #how much the diameter shrinks each split
     
