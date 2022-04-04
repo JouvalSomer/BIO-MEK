@@ -19,29 +19,33 @@ from scipy.sparse.linalg import spsolve
 
 "INPUTS"
 
-outflow_iterations = 3
+outflow_iterations = 4 #number of differend outflowfactors to plot
 
 for s in range (1, outflow_iterations+1):
-    leakfromarea = "True" #choose whether to calculate leak from area of cell or from the resistance of the cell
+    leakfromarea = "True" #choose whether to calculate leak from area of cell or 
+    #from the resistance of the cell
     
     if leakfromarea == "True":
-        leak_per_area_factor = 10**-13
+        leak_per_area_factor = 10**-11
         
     else:
-        leak_resistance = 1/300  #1/Resisistance, so higher number means more leaking
+        leak_resistance = 1/500   #1/Resisistance, so higher number means more leaking
     
     
-    viscosity = 10**-3   
-    factoroutflow = (10**s)*2*133*60 *10**1 #Needed on the boundary as P_out = factoroutflow*Q + P_end
+    viscosity = 10**-3
+    factoroutflow = (10**s)*2*133*60 *10**1 #the first outflowfactor to plot
     lengthfactor = 100 #"cell length = diameter*lengthfactor"
     shrinkfactor = (1/2)**(1/3.67)   #how much the diameter shrinks each split
     
-    D = 0.03 /shrinkfactor #means that the first radius is 3, it gets multiplied by shrinkfactor later
-    levels = 21#))the amount of times the cells split
+    D = 0.03 /shrinkfactor #means that the first radius is 3, it gets multiplied 
+    #by shrinkfactor later
+    levels = 15#))the amount of times the cells split
     
     startpressure = 40*133  #pressure in the first point in blood
-    endpressure = 30*133   #The pressure at the end, not including the boundary condition from flux. 1 Pa = 133 mmHg
-    csfpressure = 5*133  # the pressure at csf boundaries, not including flux boundary condition
+    endpressure = 30*133   #The pressure at the end, not including the 
+    #boundary condition from flux. 1 Pa = 133 mmHg
+    csfpressure = 5*133  # the pressure at csf boundaries, not including
+    #flux boundary condition
     
     #%%
     save = "False" #saves the mesh to a file
@@ -51,7 +55,8 @@ for s in range (1, outflow_iterations+1):
     
     listofpoints = []   #list all the points
     
-    listofcells = [] #list of cells, each entry is (cellnumber, first point, second point, diameter, length )
+    listofcells = [] 
+    #list of cells, each entry is (cellnumber, first point, second point, diameter, length )
     
     
     
@@ -69,11 +74,14 @@ for s in range (1, outflow_iterations+1):
         
         
         
-        for j in range(0, pointsinlevel): #going through the points in the level from the top down
+        for j in range(0, pointsinlevel): 
+            #going through the points in the level from the top down
             
             
             x = i              
-            y = toppoint - j*2*toppoint/(pointsinlevel-1) # y = y of toppoint at that level - j*(the y-distance between points at that level)
+            y = toppoint - j*2*toppoint/(pointsinlevel-1) 
+            # y = y of toppoint at that level - 
+            #j*(the y-distance between points at that level)
             point = [x, y] 
             
             
@@ -88,18 +96,21 @@ for s in range (1, outflow_iterations+1):
             
     for i in range (1, levels):
         
-        D = D * shrinkfactor   #setting the diameter as the last diameter times the shrinkingfactor
+        D = D * shrinkfactor   
+        #setting the diameter as the last diameter times the shrinkingfactor
             
         tubesinlevel = 2**i
-        pointsalreadytaken = 0 #need this mark how many points I have gone through in a level
-        for j in range(0, int(tubesinlevel/2)):    #because there is half as many startingpoints as endpoints
+        pointsalreadytaken = 0
+        #need this mark how many points I have gone through in a level
+        for j in range(0, int(tubesinlevel/2)):    
+            #because there is half as many startingpoints as endpoints
             
-            firstpoint = int(tubesinlevel/2) + j -1 #i dont use this
+            firstpoint = int(tubesinlevel/2) + j -1 
             
             for k in range(0, 2): #for the two last poinst after a split
                 
                 secondpoint = tubesinlevel + k + pointsalreadytaken*2 - 1
-                cell = [cellnumber, firstpoint, secondpoint, D, D*lengthfactor]  #last entry is the length
+                cell = [cellnumber, firstpoint, secondpoint, D, D*lengthfactor]  
                 listofcells.append(cell)        
                 cellnumber += 1
             
@@ -128,10 +139,6 @@ for s in range (1, outflow_iterations+1):
     
     
     
-    # print("list of cells (cellnumber, two points it touches, diameteter, length):", listofcells)
-    
-    # print()
-    # print("list of points: ", listofpoints)
     
     
     
@@ -153,17 +160,20 @@ for s in range (1, outflow_iterations+1):
     
     #solver
     
-    Np = int(len(listofpoints))
+    Np = int(len(listofpoints)) #number of points in blood
     
     # flux = [] #dont need this really
     print(f"creating matrices, number of points = {Np}")
     A = lil_matrix((Np, Np)) #the coefficient matrix for just the blooddomain
     A_CSF = lil_matrix((Np, Np)) #for CSF
-    B = np.zeros(Np*2)  #The B in Ax = B, is for both blood and CSF so has to be twice as long
+    B = np.zeros(Np*2)  
+    #The B in Ax = B, is for both blood and CSF so has to be twice as long
     A_topright = lil_matrix((Np, Np))
     
     A_downleft = lil_matrix((Np, Np))
-    c = [] #this is all the coefficients needed, on the form pi*r**4/(8*l*viscosity) so Q=c*(P[0]-P[1])
+    c = [] 
+    #this is all the coefficients needed, on the form 
+    #pi*r**4/(8*l*viscosity) so Q=c*(P[0]-P[1])
     
     for i in range(0, Np-1):
         c_value = np.pi*((listofcells[i][3])/2)**4/(8*listofcells[i][4]*viscosity)
@@ -171,10 +181,10 @@ for s in range (1, outflow_iterations+1):
         
     c = c+c  #this copies the array and adds it, so it can be used on the csf system as well    
     
-    #Setting up the A matrix from the eq p2-p1 = -8*flux*viscosity*length/(pi*r**4)
+    #Setting up the A matrix for inner points
     for i in range(1, int((Np-1)/2)): #all points exept firstpoint and last level
         # A[i, i] = 1
-        if i % 2 == 0: #different for odd and even numbers, as the splitting affects the numbering
+        if i % 2 == 0: #different for odd and even numbers
             lastpoint = int(i/2-1)
             nextpoint1 = int(i*2+1)
             nextpoint2 =  nextpoint1 + 1
@@ -182,9 +192,11 @@ for s in range (1, outflow_iterations+1):
             A[i, nextpoint1] = c[nextpoint1-1] #dependence on first splitpoint
             A[i, nextpoint2] = c[nextpoint2-1] #dependence on  second splitpoint
             if leakfromarea == "True":
-                A[i, i] = -c[nextpoint1 -1] - c[nextpoint2-1] - c[i-1] - np.pi*listofcells[i-1][3]*listofcells[i-1][4]*leak_per_area_factor
+                A[i, i] = (-c[nextpoint1 -1] - c[nextpoint2-1] - c[i-1] - 
+                np.pi*listofcells[i-1][3]*listofcells[i-1][4]*leak_per_area_factor)
             else:
-                A[i, i] = -c[nextpoint1 -1] - c[nextpoint2-1] - c[i-1] - c[i-1]*leak_resistance #dependence on it self, including the leak to csf
+                A[i, i] = (-c[nextpoint1 -1] - c[nextpoint2-1] 
+                           - c[i-1] - c[i-1]*leak_resistance)
         else:
             
             
@@ -197,15 +209,18 @@ for s in range (1, outflow_iterations+1):
             A[i, nextpoint1] = c[nextpoint1-1]
             A[i, nextpoint2] = c[nextpoint2-1]
             if leakfromarea == "True":
-                A[i, i] = -c[nextpoint1 -1] - c[nextpoint2-1]  - c[i-1] -  np.pi*listofcells[i-1][3]*listofcells[i-1][4]*leak_per_area_factor
+                A[i, i] = (-c[nextpoint1 -1] - c[nextpoint2-1]  - c[i-1] -  
+                           np.pi*listofcells[i-1][3]*listofcells[i-1][4]*leak_per_area_factor)
             else:
-                A[i, i] = -c[nextpoint1 -1] - c[nextpoint2-1]  - c[i-1] - c[i-1]*leak_resistance
+                A[i, i] = (-c[nextpoint1 -1] - c[nextpoint2-1]  -
+                           c[i-1] - c[i-1]*leak_resistance)
             if i % 10000 == 0:
                 print(f"creating A_blood, row {i} of {Np} points")
     for i in range(int((Np-1)/2), Np): #the coefficiants on the boundary eqs
         
         if leakfromarea == "True":
-            A[i, i] = 1 + factoroutflow*c[i-1] +  np.pi*listofcells[i-1][3]*listofcells[i-1][4]*leak_per_area_factor
+            A[i, i] = (1 + factoroutflow*c[i-1] + 
+                       np.pi*listofcells[i-1][3]*listofcells[i-1][4]*leak_per_area_factor)
         else:
             A[i, i] = 1 + factoroutflow*c[i-1] + leak_resistance*c[i-1]
         if i % 2 == 0: #different for odd and even numbers, as the splitting affects the numbering
@@ -227,9 +242,7 @@ for s in range (1, outflow_iterations+1):
     print("Assembling A_final")
     A_CSF = lil_matrix.copy(A)  #the matrix for CSF, lower left corner of total matrix
     
-    # for i in range(int((Np-1)/2), Np): #says that for the boundary in csf, the pressure = the entry in B
         
-    #     A_CSF[i, i] = 1 + factoroutflow*c[i-1]
     "#for the first point in csf:"
     A_CSF[0, 0] = 1+factoroutflow*c[0]+factoroutflow*c[1]
     
@@ -239,56 +252,59 @@ for s in range (1, outflow_iterations+1):
     
     for i in range(1, int((Np-1)/2)):
         
-        # A_topright[i, i] = k*np.pi*D*L/(viscosity*L_radial) #darcy's law, this is more accurate, but we lack information on thickness of cellwall and k (permability)
         
-        if leakfromarea == "True":
-            A_topright[i, i] = np.pi*listofcells[i-1][3]*listofcells[i-1][4]*leak_per_area_factor  #says that the leak resistance is the c of last cell, times some factor
+        if leakfromarea == "True": #says leaking is area times the factor times delta P
+            A_topright[i, i] = (np.pi*listofcells[i-1][3]*
+                                listofcells[i-1][4]*leak_per_area_factor)  
             
-            A_downleft[i, i] =   np.pi*listofcells[i-1][3]*listofcells[i-1][4]*leak_per_area_factor
+            A_downleft[i, i] =   (np.pi*listofcells[i-1][3]*listofcells[i-1][4]*
+                                  leak_per_area_factor)
         
         else:
-            A_topright[i, i] =  c[i-1]*leak_resistance  #says that the leak resistance is the c of last cell, times some factor
+            A_topright[i, i] =  c[i-1]*leak_resistance  
             
             A_downleft[i, i] =  c[i-1]*leak_resistance
     "for boundary in blood and csf"
     for i in range(int((Np-1)/2), Np):
         
-        # A_topright[i, i] = k*np.pi*D*L/(viscosity*L_radial) #darcy's law, this is more accurate, but we lack information on thickness of cellwall and k (permability)
         if leakfromarea == "True":
-            A_topright[i, i] = -np.pi*listofcells[i-1][3]*listofcells[i-1][4]*leak_per_area_factor  #says that the leak resistance is the c of last cell, times some factor
+            A_topright[i, i] = (-np.pi*listofcells[i-1][3]*
+                                listofcells[i-1][4]*leak_per_area_factor)  
             
-            A_downleft[i, i] =   -np.pi*listofcells[i-1][3]*listofcells[i-1][4]*leak_per_area_factor
+            A_downleft[i, i] =   (-np.pi*listofcells[i-1][3]*
+                                  listofcells[i-1][4]*leak_per_area_factor)
         
         else:
-            A_topright[i, i] =  -c[i-1]*leak_resistance  #says that the leak resistance is the c of last cell, times some factor
+            A_topright[i, i] =  -c[i-1]*leak_resistance  
             
             A_downleft[i, i] =  -c[i-1]*leak_resistance
     
     
     
     
-    # A_final = np.bmat('A, A_topright; A_downleft, A_CSF') #combining the matrixes to a final A-matrix
     topp_part = hstack([A, A_topright])
     bottom_part = hstack([A_downleft, A_CSF])
     
     
     
-    A_final = vstack([topp_part, bottom_part], format="csc") #') #combining the matrixes to a final A-matrix
+    A_final = vstack([topp_part, bottom_part], format="csc") 
        
         
     B[0] = startpressure
     
     
     print("Assembling B-array")
-    for i in range(Np+int((Np-1)/2),   int(Np*2)): #this is for csf
+    for i in range(Np+int((Np-1)/2),   int(Np*2)): #this is for boundary in csf
         
         B[i] = csfpressure
-    #this is for csf's first point, where flux is the sum of the split
-    B[Np] = csfpressure
+        
+    B[Np] = csfpressure        #this is for csf's first point,
+    #where flux is the sum of the split
+
+
     
     
-    
-    for i in range(int((Np-1)/2), Np):
+    for i in range(int((Np-1)/2), Np): #the boundary points in blood
         B[i] = endpressure
     
     
@@ -306,7 +322,7 @@ for s in range (1, outflow_iterations+1):
     avg_pressure_blood[0] = pressure[0]
     avg_pressure_CSF[0] = pressure[Np]
     
-    for i in range(1, levels):
+    for i in range(1, levels): #finding the avg pressure at each level
         pointsinlevel = 2**i
         
         avg_pressure_blood[i] = np.average(pressure[pointsinlevel-1:2*pointsinlevel-2])
@@ -318,23 +334,25 @@ for s in range (1, outflow_iterations+1):
 
     plt.subplot(2, 1, 1)
     x = np.linspace(0, levels, levels)
-    plt.plot( x, avg_pressure_blood,  label=f"C ={format(factoroutflow, '10.1E')}")
+    plt.plot( x, avg_pressure_blood,  label=f"S ={format(factoroutflow, '10.1E')}")
     legend = plt.legend(loc="lower left", prop={"size": 7})
-    plt.ylabel("Average Pressure [Pa]")
-    plt.title("Blood")
+    plt.ylabel("Average Pressure [Pa]", fontsize = 8)
+    plt.title("Blood", fontsize=10)
     
     plt.subplot(2, 1, 2)
-    plt.plot(x, avg_pressure_CSF,   label=f"C ={format(factoroutflow, '10.1E')}")
-    plt.title("CSF")
-    plt.ylabel("Average Pressure [Pa]")
+    plt.plot(x, avg_pressure_CSF,   label=f"S ={format(factoroutflow, '10.1E')}")
+    plt.title("CSF", fontsize=10)
+    plt.ylabel("Average Pressure [Pa]", fontsize = 8)
     plt.xlabel("Bifurcations")
 
     legend = plt.legend(loc="lower left", prop={"size": 7})
     if leakfromarea == "True":
-        plt.suptitle(f"Leak from area,  Leakfactor = {leak_per_area_factor}")
+        plt.suptitle(r"Leak calculated using Darcys Law""\n" 
+                     r"$\alpha$ = {}".format(leak_per_area_factor), fontsize=14)
+        
     else:
-        plt.suptitle(f"Leak from resistance, factor = {1/leak_resistance}")
-    print()
+        plt.suptitle(r"Leak proportional to resistance in cell""\n" 
+                     r"$R_f$ = {}".format(1/leak_resistance), fontsize=14)    
     print()
     print("INPUTS:")
     print(f"Leak from area = {leakfromarea}")
@@ -350,7 +368,7 @@ for s in range (1, outflow_iterations+1):
 plt.tight_layout()
 
 
-plt.savefig("Different_c", dpi=1000)
+plt.savefig("plot", dpi=1000)
 
 
 plt.show()  
