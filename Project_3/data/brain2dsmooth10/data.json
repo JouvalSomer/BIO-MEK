@@ -1,0 +1,1 @@
+{"meshpath": "../../../slash/demos/results/smoothed_domain10.xml", "d in mm**2 s**(-1)": "1e-4", "dt in min": "16", "numcells": 363344, "hmax": 0.5557483366694908, "nsteps": 180, "exp_string": "t < 86400.0 ? t/86400.0 : (-2/172800.0)*t + 2", "T_max": 172800.0, "dimensions": [128.9616184268349, 161.811715374283]}

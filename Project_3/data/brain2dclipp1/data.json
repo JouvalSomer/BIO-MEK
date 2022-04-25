@@ -1,0 +1,1 @@
+{"meshpath": "../../../slash/demos/clipped_1_mesh.xml", "d in mm**2 s**(-1)": "1e-4", "dt in min": "16", "numcells": 533376, "hmax": 0.5751141650279267, "nsteps": 180, "exp_string": "t < 86400.0 ? t/86400.0 : (-2/172800.0)*t + 2", "T_max": 172800.0, "dimensions": [133.05135033600635, 169.79950394304987]}
