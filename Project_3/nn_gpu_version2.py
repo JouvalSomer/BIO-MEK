@@ -81,9 +81,9 @@ spatial_dim = 2
 
 D_init = 0.0001 #Intial guess for D
 
-pde_w = 0.01 #PDE-weights
+pde_w = 0 #PDE-weights
 
-e = -1 #Step-size factor
+e = -10 #Step-size factor
 
 torch.manual_seed(123) #Seed for rand. functions
 
@@ -437,7 +437,8 @@ for i in range(max_iters):
     # Update the weights and biases
     optimizer.step()
     scheduler.step()
-    print(i)
+    print('iteration = ',i)
+    print('Loss = ',loss.item())
     print(f"D = {D_param.item()}")
 #lbfgs_optim.step(closure)
 
