@@ -2,9 +2,7 @@
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import cm
-from mpl_toolkits.mplot3d import Axes3D
-import os, json, glob
+import os, glob
 
 
 if torch.cuda.is_available():
@@ -72,177 +70,168 @@ class Net(torch.nn.Module):
         out = torch.squeeze(out, 1)
 
         return out
+#%%
 
 "PARAMETERS"
 
-max_iters = 500
+max_iters = 2000 #Max iterations
 
-n_pde = int(1e6)
-T_final = 1
-n_residual = 5000
+n_pde = int(1e6) #Number of residual points
+
 spatial_dim = 2
 
-D_init = 0.0001
-D_true = 0.1
-N=20
-n_data = 100
-pde_w = 1
+D_init = 0.0001 #Intial guess for D
 
-torch.manual_seed(123)
+pde_w = 0.01 #PDE-weights
 
-use_true_solution = False
-use_scan_data = True
+e = -1 #Step-size factor
 
+torch.manual_seed(123) #Seed for rand. functions
 
 #%%
-if use_scan_data == True:
-    ''' Import data'''
+
+''' INIT '''
+
+D_during_train =[]
+dloss = []
+pdeloss = []
+data_list = []
+input_list = []
+losses = []
+counter = 0
+
+#%%
+
+''' Import data'''
+    
+path_to_data = os.getcwd() + "/data/"
+
+dataset = "brain2dclipp1"
+
+brainmask = np.load(path_to_data + dataset +  "/masks/mask.npy")
+box = np.load(path_to_data + dataset +  "/masks/box.npy")
+
+roi = brainmask * box
+
+def load_images(path_to_data, dataset):
+    path_to_concentrations = path_to_data + dataset +  "/concentrations/"
+    
+    images = {}
+    
+    for cfile in os.listdir(path_to_concentrations):
         
-    
-    
-    path_to_data = "/home/lemmet/Documents/Python_Scripts/BIO-MEK/Project_3/data/"
-    
-    dataset = "brain2dclipp1"
-    
-    
-    brainmask = np.load(path_to_data + dataset +  "/masks/mask.npy")
-    box = np.load(path_to_data + dataset +  "/masks/box.npy")
-    
-    roi = brainmask * box
-    
-    def load_images(path_to_data, dataset):
-        path_to_concentrations = path_to_data + dataset +  "/concentrations/"
+        c = np.load(path_to_concentrations + cfile)
         
-        images = {}
+        images[cfile[:-4]] = c
         
-        for cfile in os.listdir(path_to_concentrations):
-            
-            c = np.load(path_to_concentrations + cfile)
-            
-            images[cfile[:-4]] = c
-            
-        return images
-        
+    return images
     
-    images = load_images(path_to_data, dataset)
+
+images = load_images(path_to_data, dataset)
+
+images.keys()
+
+param_dict ={"a": 1}
+param_dict["b"] = 2
+
+
+# exportfolder = "/home/jacob/BIO-MEK/BIO-MEK/Project_3/"
+# with open(exportfolder + 'my_parameters.json', 'w') as fp:
+#     json.dump(param_dict, fp, sort_keys=True, indent=4)
     
-    images.keys()
+# with open(exportfolder + 'my_parameters.json', 'r') as data_file:    
+#     loaded_dict = json.load(data_file)
     
-    param_dict ={"a": 1}
-    param_dict["b"] = 2
-    
-    
-    # exportfolder = "/home/jacob/BIO-MEK/BIO-MEK/Project_3/"
-    # with open(exportfolder + 'my_parameters.json', 'w') as fp:
-    #     json.dump(param_dict, fp, sort_keys=True, indent=4)
-        
-    # with open(exportfolder + 'my_parameters.json', 'r') as data_file:    
-    #     loaded_dict = json.load(data_file)
-        
 
 
 #%%    
-    ''' Define grid '''
+''' Define grid '''
 
-    def make_coordinate_grid(images):
-        """ Create a (n x n x 2) array where arr[i,j, :] = (x_i, y_i) is the position of voxel (i,j)"""
-        n = 256
-    
-        # We want to assign coordinates to every voxel, so the shape of the meshgrid has to be the same as the image
-        assert n == images[next(iter(images.keys()))].shape[0]
-        assert n == images[next(iter(images.keys()))].shape[1]
-        
-        coordinate_axis = np.linspace(-0.5, 0.5, n)
-        
-        XX, YY = np.meshgrid(coordinate_axis, coordinate_axis, indexing='ij')
-        
-        arr = np.array([XX, YY])
-    
-        coordinate_grid = np.swapaxes(arr, 0, 1)
-        
-        coordinate_grid = np.swapaxes(coordinate_grid, 1, 2)
-        
-        return coordinate_grid
-    
-    coordinate_grid = make_coordinate_grid(images)
+def make_coordinate_grid(images):
+    """ Create a (n x n x 2) array where arr[i,j, :] = (x_i, y_i) is the position of voxel (i,j)"""
+    n = 256
 
+    # We want to assign coordinates to every voxel, so the shape of the meshgrid has to be the same as the image
+    assert n == images[next(iter(images.keys()))].shape[0]
+    assert n == images[next(iter(images.keys()))].shape[1]
+    
+    coordinate_axis = np.linspace(-0.5, 0.5, n)
+    
+    XX, YY = np.meshgrid(coordinate_axis, coordinate_axis, indexing='ij')
+    
+    arr = np.array([XX, YY])
+
+    coordinate_grid = np.swapaxes(arr, 0, 1)
+    
+    coordinate_grid = np.swapaxes(coordinate_grid, 1, 2)
+    
+    return coordinate_grid
+
+coordinate_grid = make_coordinate_grid(images)
+
+
+def get_domain_coordinates(coordinate_grid, mask):
+    return coordinate_grid[mask]   
+    
+xy = get_domain_coordinates(coordinate_grid, mask=roi)
+
+def get_input_output_pairs(coordinate_grid, mask, images):
+    
+    input_output_pairs = {}
+    
+    xy = get_domain_coordinates(coordinate_grid, mask)
+    
+    for timekey, image in images.items():
+        
+        xyt = np.zeros((xy.shape[0], 3))
+        xyt[..., :2] = xy
+        xyt[..., -1] = float(timekey)
+        
+        input_output_pairs[timekey] = (xyt, image[mask])
+        
+    return input_output_pairs
+
+datadict = get_input_output_pairs(coordinate_grid, mask=roi, images=images)
 #%%
-    def get_domain_coordinates(coordinate_grid, mask):
-        return coordinate_grid[mask]   
-        
-    xy = get_domain_coordinates(coordinate_grid, mask=roi)
-    
-    def get_input_output_pairs(coordinate_grid, mask, images):
-        
-        input_output_pairs = {}
-        
-        xy = get_domain_coordinates(coordinate_grid, mask)
-        
-        for timekey, image in images.items():
-            
-            xyt = np.zeros((xy.shape[0], 3))
-            xyt[..., :2] = xy
-            xyt[..., -1] = float(timekey)
-            
-            input_output_pairs[timekey] = (xyt, image[mask])
-            
-        return input_output_pairs
-    
-    datadict = get_input_output_pairs(coordinate_grid, mask=roi, images=images)
-    
-    '''fff'''
+'''Get timedata'''
 
 
-    l = glob.glob(path_to_data +  dataset +  "/concentrations/*")
-    ts = []
-    for f in l:
-        t = f.split(".npy")[0]
-        
-        ts.append(t)
-        
-    
-    ts[:] = (elem[int(len(path_to_data +  dataset +"/concentrations/")):] for elem in ts)
-    
-    
-    ts.sort()
-    ts_i = np.array(ts, dtype=(float)).reshape(np.shape(np.array(ts, dtype=(float)))[0], 1)
+l = glob.glob(path_to_data +  dataset +  "/concentrations/*")
+ts = []
+for f in l:
+    t = f.split(".npy")[0]
+    ts.append(t)
+
+ts[:] = (elem[int(len(path_to_data +  dataset +"/concentrations/")):] for elem in ts)
+ts.sort()
+ts_i = np.array(ts, dtype=(float)).reshape(np.shape(np.array(ts, dtype=(float)))[0], 1)
 
 
 #%%
 
+''' Create space-time tensor '''
 
-
-    data_list = []
-    input_list = []
+for current_time in ts:
     
-    
-    for current_time in ts:
-        
-        xyt = torch.tensor(datadict[current_time][0]).float()
-        if using_gpu == True:
-        # breakpoint()
-            xyt = xyt.cuda()
-    
-        assert spatial_dim == 2
-    
-        u_true = torch.tensor(datadict[current_time][1]).float()
-        if using_gpu == True:
-        
-            u_true = u_true.cuda()
-    
-        data_list.append(u_true)
-        input_list.append(xyt)
-        
-if use_true_solution == True:
+    xyt = torch.tensor(datadict[current_time][0]).float()
+    if using_gpu == True:
+    # breakpoint()
+        xyt = xyt.cuda()
 
-    def true_solution(xyt):
-        return torch.sin(np.pi * xyt[:, 0]) * torch.sin(np.pi * xyt[:, 1]) *  torch.exp((-D_true * 2*np.pi**2)* xyt[:, -1])
+    assert spatial_dim == 2
 
+    u_true = torch.tensor(datadict[current_time][1]).float()
+    if using_gpu == True:
+    
+        u_true = u_true.cuda()
 
+    data_list.append(u_true)
+    input_list.append(xyt)
+    
 
-    t_data = torch.linspace(0,T_final,N)
 #%%
 
+''' Residual points '''
 
 def init_collocation_points(coords, num_points, t_max, t_min ):
     with torch.no_grad():
@@ -300,6 +289,8 @@ inputnormalization = InputNormalization(xyt, tmin, tmax)
 
 #%%
 
+''' Optimizer '''
+
 D_param = torch.tensor(D_init, device=device)
 
 solve_inverse = True
@@ -322,12 +313,12 @@ loss_function=torch.nn.MSELoss(reduction="mean")
 lbfgs_optim = torch.optim.LBFGS(params,
                                 max_iter=1000,
                                 line_search_fn="strong_wolfe", tolerance_grad=1e-16, tolerance_change=1e-16)#, max_eval=10)
-# optimizer = torch.optim.Adam(params=params)
-
-losses = []
+optimizer = torch.optim.Adam(params=params)
 
 
 
+#%%
+''' Losses '''
 
 def data_loss(nn, input_list, data_list):
     loss = 0.
@@ -384,11 +375,7 @@ def pderesidual(coords, nn, D):
 
         return loss_function(residual, torch.zeros_like(residual))
 
-D_during_train =[]
 
-dloss = []
-pdeloss = []
-counter = 0
 def closure():
     global counter
     lbfgs_optim.zero_grad()
@@ -416,46 +403,49 @@ def closure():
     
     return loss
 
-e = -1
+
 lambda1 = lambda x: 10 ** (e * x / max_iters)
-# scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda1)
+scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda1)
 
-# in the for loop:
+#%%
+''' Optimization loop  '''
 
-
-
-
-# for i in range(max_iters):
-#     #  Free all intermediate values:
-#     optimizer.zero_grad()
+for i in range(max_iters):
+    #  Free all intermediate values:
+    optimizer.zero_grad()
     
-#     # Forward pass:
-#     data_loss_value = data_loss(u_nn,  input_list, data_list)
-#     #xt_res
-#     #with torch.no_grad():
-#      #   xt_res = xt_res * torch.rand_like(xt_res)
-#     # BZ: pass the stacked space-time points here
+    # Forward pass:
+    data_loss_value = data_loss(u_nn,  input_list, data_list)
+    #xt_res
+    #with torch.no_grad():
+      #   xt_res = xt_res * torch.rand_like(xt_res)
+    # BZ: pass the stacked space-time points here
     
-#     #pde_loss_value = torch.tensor(0.)
-#     pde_loss_value = pde_w * pderesidual(pde_points, u_nn, D=D_param)
+    #pde_loss_value = torch.tensor(0.)
+    pde_loss_value = pde_w * pderesidual(pde_points, u_nn, D=D_param)
         
-#     loss = data_loss_value + pde_loss_value
+    loss = data_loss_value + pde_loss_value
     
-#     # Backward pass, compute gradient w.r.t. weights and biases
-#     loss.backward()
+    # Backward pass, compute gradient w.r.t. weights and biases
+    loss.backward()
     
-#     D_during_train.append(D_param.item())
-#     # Log the loss to make a figure
-#     losses.append(loss.item())
-#     dloss.append(data_loss_value.item())
-#     pdeloss.append(pde_loss_value.item())
+    D_during_train.append(D_param.item())
+    # Log the loss to make a figure
+    losses.append(loss.item())
+    dloss.append(data_loss_value.item())
+    pdeloss.append(pde_loss_value.item())
     
-#     # Update the weights and biases
-#     optimizer.step()
-#     scheduler.step()
-#     print(i)
-#     print(f"D = {D_param.item()}")
-lbfgs_optim.step(closure)
+    # Update the weights and biases
+    optimizer.step()
+    scheduler.step()
+    print(i)
+    print(f"D = {D_param.item()}")
+#lbfgs_optim.step(closure)
+
+
+#%%
+
+''' Plot loss and D during training '''
 
 plt.figure()
 plt.semilogy(losses, label='total loss')
@@ -475,6 +465,9 @@ plt.figure()
 plt.plot(D_during_train)
 plt.ylabel("D")
 plt.xlabel("Iteration")
+
+#%%
+''' Plot true and NN data '''
 
 plt.figure()
 for i,t in enumerate(ts):
