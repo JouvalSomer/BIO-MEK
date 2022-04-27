@@ -73,7 +73,7 @@ class Net(torch.nn.Module):
 
 "PARAMETERS"
 
-max_iters = 2000 #Max iterations
+max_iters = 15000 #Max iterations
 
 n_pde = int(1e6) #Number of residual points
 
@@ -81,9 +81,9 @@ spatial_dim = 2
 
 D_init = 0.0001 #Intial guess for D
 
-pde_w = 0 #PDE-weights
+pde_w = 1 #PDE-weights
 
-e = -10 #Step-size factor
+e = -1 #Step-size factor
 
 torch.manual_seed(123) #Seed for rand. functions
 
@@ -297,7 +297,7 @@ if solve_inverse:
     D_param = torch.nn.Parameter(D_param)
     D_param = D_param.to(device)
 
-u_nn = Net(num_hidden_units=32, num_hidden_layers=5, inputs=3, inputnormalization=inputnormalization).to(device)
+u_nn = Net(num_hidden_units=38, num_hidden_layers=6, inputs=3, inputnormalization=inputnormalization).to(device)
 
 
 params = list(u_nn.parameters())
