@@ -83,7 +83,7 @@ D_init = 0.0001 #Intial guess for D
 
 pde_w = 1 #PDE-weights
 
-e = -1 #Step-size factor
+e = -10 #Step-size factor
 
 torch.manual_seed(123) #Seed for rand. functions
 
@@ -297,7 +297,7 @@ if solve_inverse:
     D_param = torch.nn.Parameter(D_param)
     D_param = D_param.to(device)
 
-u_nn = Net(num_hidden_units=38, num_hidden_layers=6, inputs=3, inputnormalization=inputnormalization).to(device)
+u_nn = Net(num_hidden_units=32, num_hidden_layers=5, inputs=3, inputnormalization=inputnormalization).to(device)
 
 
 params = list(u_nn.parameters())
