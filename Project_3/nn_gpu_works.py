@@ -73,21 +73,21 @@ class Net(torch.nn.Module):
 
 "PARAMETERS"
 
-max_iters = 15000 #Max iterations
+max_iters = 25000 #Max iterations
 
 n_pde = int(1e6) #Number of residual points
 
 spatial_dim = 2
 
-D_init = 0.0001 #Intial guess for D
+D_init = 1e-5 #Intial guess for D
 
-pde_w = 1 #PDE-weights
+pde_w = 5 #PDE-weights
 
-e = -1 #Step-size factor
+e = -3 #Step-size factor
     # optimizer.step()
     # scheduler.step()
 learning_rate = 1e-2 #learning rate for adams, default 1e-3
-learning_rate_D = 1e-6
+learning_rate_D = 5e-6
 torch.manual_seed(123) #Seed for rand. functions
 
 #%%
@@ -470,9 +470,11 @@ plt.legend()
 
 
 plt.figure()
+plt.ylim(6e-06, 1e-05)
 plt.plot(D_during_train)
 plt.ylabel("D")
 plt.xlabel("Iteration")
+
 
 #%%
 ''' Plot true and NN data '''

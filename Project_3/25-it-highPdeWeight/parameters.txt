@@ -1,0 +1,45 @@
+"PARAMETERS"
+
+max_iters = 25000 #Max iterations
+
+n_pde = int(1e6) #Number of residual points
+
+spatial_dim = 2
+
+D_init = 1e-5 #Intial guess for D
+
+pde_w = 5 #PDE-weights
+
+e = -3 #Step-size factor
+    # optimizer.step()
+    # scheduler.step()
+learning_rate = 1e-2 #learning rate for adams, default 1e-3
+learning_rate_D = 5e-6
+torch.manual_seed(123) #Seed for rand. functions
+
+
+
+
+Loss =  0.0012617469765245914
+D = 9.995964319386985e-06
+/home/lemmet/Documents/Python_Scripts/BIO-MEK/Project_3/nn_gpu_works.py:496: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  plt.figure(dpi=200)
+<Figure size 432x288 with 0 Axes>
+Parameter containing:
+tensor(9.9976e-06, device='cuda:0', requires_grad=True)
+D_init 1e-05
+
+
+
+
+LAST VALUES:
+
+data_loss_value
+Out[27]: tensor(0.0007, device='cuda:0', grad_fn=<AddBackward0>)
+
+
+
+pde_loss_value
+Out[28]: tensor(0.0006, device='cuda:0', grad_fn=<MulBackward0>)  ##this is with weight = 5, so really 0.0001
+
+
