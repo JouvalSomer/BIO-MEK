@@ -1,0 +1,28 @@
+max_iters = 25000 #Max iterations
+
+n_pde = int(1e6) #Number of residual points
+
+spatial_dim = 2
+
+D_init = 1. #Intial guess for D
+
+pde_w = 5 #PDE-weights
+
+e = -2 #Step-size factor
+    # optimizer.step()
+    # scheduler.step()
+learning_rate = 1e-2 #learning rate for adams, default 1e-3
+learning_rate_D = 1e-3
+torch.manual_seed(123) #Seed for rand. functions
+# dataset = "brain2dclipp1"
+dataset = "brain2dsmooth10"
+
+
+Loss =  0.00233899662271142
+D = 0.4751805067062378
+D in SI =  tensor(0.0017, device='cuda:0', grad_fn=<MulBackward0>)
+
+
+data_loss = tensor(0.0023, device='cuda:0', grad_fn=<AddBackward0>)
+
+pde loss = tensor(6.4963e-05, device='cuda:0', grad_fn=<MulBackward0>) with weights	

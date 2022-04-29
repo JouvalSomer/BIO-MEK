@@ -1,0 +1,26 @@
+
+"PARAMETERS"
+max_iters = 25000 #Max iterations
+
+n_pde = int(1e6) #Number of residual points
+
+spatial_dim = 2
+
+D_init = 1. #Intial guess for D
+
+pde_w = 5 #PDE-weights
+
+e = -2 #Step-size factor
+    # optimizer.step()
+    # scheduler.step()
+learning_rate = 1e-2 #learning rate for adams, default 1e-3
+learning_rate_D = 5e-4
+torch.manual_seed(123) #Seed for rand. functions
+
+
+last loss: 
+Loss =  0.0009944407502189279
+
+dataloss = pde_loss = 0.0005  #with weight
+
+
