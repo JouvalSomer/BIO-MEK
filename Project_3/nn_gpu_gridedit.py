@@ -72,23 +72,25 @@ class Net(torch.nn.Module):
 #%%
 
 "PARAMETERS"
+max_iters = 15000 #Max iterations
 
-max_iters = 5000 #Max iterations
-
-n_pde = int(1e6) #Number of residual points
+n_pde = int(1e5) #Number of residual points
 
 spatial_dim = 2
 
-D_init = 1e-5 #Intial guess for D
+D_init = 1. #Intial guess for D
 
 pde_w = 5 #PDE-weights
 
-e = -1 #Step-size factor
+e = -2 #Step-size factor
     # optimizer.step()
     # scheduler.step()
-learning_rate = 1e-4 #learning rate for adams, default 1e-3
-learning_rate_D = 5e-6
+learning_rate = 1e-2 #learning rate for adams, default 1e-3
+learning_rate_D = 1e-3
 torch.manual_seed(123) #Seed for rand. functions
+# dataset = "brain2dclipp1"
+dataset = "brain2dsmooth10"
+
 
 #%%
 
@@ -108,7 +110,7 @@ counter = 0
     
 path_to_data = os.getcwd() + "/data/"
 
-dataset = "brain2dclipp1"
+
 
 brainmask = np.load(path_to_data + dataset +  "/masks/mask.npy")
 box = np.load(path_to_data + dataset +  "/masks/box.npy")
@@ -178,8 +180,13 @@ coordinate_grid = make_coordinate_grid(shape=256)
 
 def get_domain_coordinates(coordinate_grid, mask):
     return coordinate_grid[mask]   
+if dataset == "brain2dsmooth10":
     
-xy = get_domain_coordinates(coordinate_grid, mask=roi)
+    xy = get_domain_coordinates(coordinate_grid, mask=roi)
+    
+if dataset == "brain2dclipp1":
+
+    xy = get_domain_coordinates(coordinate_grid, mask=roi)
 
 def get_input_output_pairs(coordinate_grid, mask, images):
     
@@ -196,8 +203,13 @@ def get_input_output_pairs(coordinate_grid, mask, images):
         input_output_pairs[timekey] = (xyt, image[mask])
         
     return input_output_pairs
-
-datadict = get_input_output_pairs(coordinate_grid, mask=roi, images=images)
+if dataset == "brain2dsmooth10":
+    datadict = get_input_output_pairs(coordinate_grid, mask=roi, images=images)
+    
+if dataset == "brain2dclipp1":
+    
+    datadict = get_input_output_pairs(coordinate_grid, mask=roi, images=images)
+    
 #%%
 '''Get timedata'''
 
@@ -230,7 +242,7 @@ for current_time in ts:
     if using_gpu == True:
     
         u_true = u_true.cuda()
-
+    
     data_list.append(u_true)
     input_list.append(xyt)
     
@@ -459,7 +471,7 @@ for i in range(max_iters):
 
 ''' Plot loss and D during training '''
 
-plt.figure()
+plt.figure(dpi = 500)
 plt.semilogy(losses, label='total loss')
 
 dloss = torch.tensor(dloss)
@@ -473,22 +485,10 @@ plt.xlabel("Iteration")
 plt.legend()
 
 
-plt.figure()
-#plt.ylim(6e-06, 1e-05)plt.figure()
-plt.semilogy(losses, label='total loss')
-
-dloss = torch.tensor(dloss)
-dloss = dloss.cpu()
-pdeloss = torch.tensor(pdeloss)
-pdeloss = pdeloss.cpu()
-plt.semilogy(dloss, label='data')
-plt.semilogy(pdeloss, label='pde')
-plt.ylabel("Loss")
-plt.xlabel("Iteration")
-plt.legend()
 
 
-plt.figure()
+
+plt.figure(dpi=500)
 #plt.ylim(6e-06, 1e-05)
 plt.plot(D_during_train)
 plt.ylabel("D")
@@ -509,13 +509,13 @@ for i,t in enumerate(ts):
 
     if i % 2 == 0:
         xyt_cpu = xyt.cpu()
-        plt.figure(dpi=200)
+        plt.figure(dpi=500)
         plt.plot(xyt_cpu[..., 0], xyt_cpu[..., 1], marker=".", linewidth=0, markersize=0.1, color="k")
         plt.xlabel("x", fontsize=12)
         plt.ylabel("y", fontsize=12)
         plt.scatter(xyt_cpu[..., 0], xyt_cpu[..., 1], c=datadict[t][1], vmin=0., vmax=1.)
         plt.colorbar()
-        plt.figure(dpi=200)
+        plt.figure(dpi=500)
         
         xyt[:, -1] = float(t)
         plt.xlabel("x", fontsize=12)
@@ -537,5 +537,5 @@ for i,t in enumerate(ts):
 
 plt.show()
 
-print(D_param)
+print("D in SI = ", D_param*1e-06*3600)
 print('D_init', D_init)
